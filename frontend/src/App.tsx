@@ -14,17 +14,14 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
 import { getTheme } from "./components/theme";
-import { useMediaQuery } from "@mui/material";
+import { ThemeModeProvider, useThemeMode } from "./components/ThemeContext";
 
-function App() {
+function ThemedApp() {
+  const { mode, toggleMode, icon } = useThemeMode(); // funktioniert jetzt!
   const { token } = useAuth();
   const [i18nInitialized, setI18nInitialized] = useState(false);
-  const [mode, setMode] = useState<"light" | "dark">("dark");
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const theme = getTheme(prefersDarkMode ? "dark" : "light");
+  const theme = getTheme(mode);
 
   useEffect(() => {
     initI18n(token).then(() => {
@@ -51,11 +48,8 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box sx={{ position: "absolute", top: 16, right: 16 }}>
-        <IconButton
-          onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-          color="inherit"
-        >
-          {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
+        <IconButton onClick={toggleMode} color="inherit">
+          {icon}
         </IconButton>
       </Box>
       <BrowserRouter>
@@ -81,6 +75,14 @@ function App() {
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ThemeModeProvider>
+      <ThemedApp />
+    </ThemeModeProvider>
   );
 }
 

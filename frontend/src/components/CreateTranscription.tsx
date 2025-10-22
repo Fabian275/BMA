@@ -29,7 +29,6 @@ interface Entry {
   location: string;
   date: Date | null;
   description: string;
-  is_closed: boolean;
   transcribed_text?: string;
 }
 
@@ -230,7 +229,7 @@ const CreateTranscription = (props: Props) => {
 
   return (
     <Box sx={{ margin: "auto", mt: 4 }}>
-      <Card sx={{ backgroundColor: "#f9f9f9", my: 4, px: 2, pt: 2 }}>
+      <Card sx={{ my: 4, px: 2, pt: 2 }}>
         <Box
           sx={{
             display: "flex",
@@ -239,6 +238,7 @@ const CreateTranscription = (props: Props) => {
             border: "1px solid #000",
             p: 2,
             mb: 2,
+            gap: 2,
           }}
         >
           <Button variant="outlined" component="label" disabled={!!file}>
@@ -257,26 +257,36 @@ const CreateTranscription = (props: Props) => {
               }}
             />
           </Button>
-          {file && fileURL && (
-            <Box my="auto">
-              <audio controls>
-                <source src={fileURL} />
-                {t("audio_not_supported")}
-              </audio>
-            </Box>
-          )}
-          {file && (
+
+          <Box
+            sx={{
+              width: 400,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+            {file && fileURL ? (
+              <Box my="auto">
+                <audio controls>
+                  <source src={fileURL} />
+                  {t("audio_not_supported")}
+                </audio>
+              </Box>
+            ) : (
+              <Typography variant="body2" color="textSecondary"></Typography>
+            )}
+          </Box>
+          {file ? (
             <Button
               variant="outlined"
               color="error"
-              disabled={entry.is_closed}
               onClick={() => {
                 setOpen(true);
               }}
             >
               <DeleteIcon />
             </Button>
-          )}
+          ) : <Button disabled />}
         </Box>
 
         <Box sx={{ mb: 2 }}>
@@ -314,14 +324,14 @@ const CreateTranscription = (props: Props) => {
             variant="contained"
             color="primary"
             fullWidth
-            disabled={loading || entry.is_closed}
+            disabled={loading}
           >
             {loading ? <CircularProgress size={24} /> : "Transkribieren"}
           </Button>
         </Box>
       </Card>
       {(entry.transcribed_text || entry.transcribed_text === "") && (
-        <Card sx={{ backgroundColor: "#f9f9f9" }}>
+        <Card>
           <CardContent>
             <Typography variant="h6">{t("transcription")}</Typography>
             <TextField
@@ -330,7 +340,6 @@ const CreateTranscription = (props: Props) => {
               minRows={4}
               variant="outlined"
               value={entry.transcribed_text}
-              disabled={entry.is_closed}
               onChange={(e) => {
                 setEntry((prev) => ({
                   ...prev,
@@ -350,7 +359,6 @@ const CreateTranscription = (props: Props) => {
             <Button
               variant="outlined"
               color="primary"
-              disabled={entry.is_closed}
               onClick={() => {
                 fetchEntry();
               }}
@@ -363,7 +371,6 @@ const CreateTranscription = (props: Props) => {
               onClick={() => {
                 handleSave();
               }}
-              disabled={entry.is_closed}
             >
               <SaveIcon />
             </Button>

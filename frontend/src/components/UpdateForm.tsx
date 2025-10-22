@@ -7,9 +7,6 @@ import {
   Snackbar,
   Card,
 } from "@mui/material";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../AuthProvider";
@@ -19,10 +16,8 @@ import { t } from "i18next";
 
 interface Entry {
   title: string;
-  location: string;
   date: Date | null;
   description: string;
-  is_closed: boolean;
   transcribed_text?: string;
 }
 
@@ -59,55 +54,27 @@ const UpdateForm = (props: Props) => {
   };
 
   return (
-    <Card sx={{ backgroundColor: "#f9f9f9", px: 2, pt: 2 }}>
+    <Card sx={{ px: 2, pt: 2 }}>
       <Box
         component="form"
         noValidate
         sx={{ mt: 1, mb: 2, display: "flex", flexDirection: "column" }}
       >
         <Grid container spacing={2} mb={2}>
-          <Grid size={4} sm={2}>
-            <TextField
-              disabled={entry.is_closed}
-              required
-              fullWidth
-              label={t("title")}
-              value={entry.title}
-              onChange={(e) => setEntry({ ...entry, title: e.target.value })}
-            />
-          </Grid>
-          <Grid size={4} sm={2}>
-            <TextField
-              disabled={entry.is_closed}
-              required
-              fullWidth
-              label={t("location")}
-              value={entry.location}
-              onChange={(e) => setEntry({ ...entry, location: e.target.value })}
-            />
-          </Grid>
-          <Grid size={4} sm={2}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                disabled={entry.is_closed}
-                format="dd/MM/yyyy"
-                label={t("date")}
-                value={entry.date}
-                onChange={(e) => setEntry({ ...entry, date: e })}
-                slots={{ textField: TextField }}
-                slotProps={{ textField: { fullWidth: true, required: true } }}
-              />
-            </LocalizationProvider>
-          </Grid>
+          <TextField
+            required
+            fullWidth
+            label={t("title")}
+            value={entry.title}
+            onChange={(e) => setEntry({ ...entry, title: e.target.value })}
+          />
         </Grid>
         <TextField
-          required
           fullWidth
           label={t("description")}
           multiline
           rows={4}
-          disabled={entry.is_closed}
-          value={entry.description}
+          value={entry?.description || ""}
           onChange={(e) => setEntry({ ...entry, description: e.target.value })}
         />
         <Grid container spacing={2} mb={2} justifyContent="space-between">
@@ -115,7 +82,6 @@ const UpdateForm = (props: Props) => {
             <Button
               variant="outlined"
               fullWidth
-              disabled={entry.is_closed}
               onClick={() => {
                 fetchEntry();
               }}
@@ -130,7 +96,6 @@ const UpdateForm = (props: Props) => {
               fullWidth
               onClick={handleUpdateEntry}
               sx={{ mt: 2 }}
-              disabled={entry.is_closed}
             >
               <SaveIcon />
             </Button>

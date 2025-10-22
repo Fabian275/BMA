@@ -5,15 +5,12 @@ import Navbar from "./Navbar";
 import { useParams } from "react-router-dom";
 import UpdateForm from "./UpdateForm";
 import CreateTranscription from "./CreateTranscription";
-import axios from "axios";
 import { useTranslation } from "react-i18next";
 
 interface Entry {
   title: string | null;
-  location: string;
   date: Date | null;
-  description: string;
-  is_closed: boolean;
+  description: string | null;
   transcribed_text?: string;
 }
 
@@ -22,10 +19,9 @@ const Detailview = () => {
   const { t } = useTranslation();
   const [entry, setEntry] = useState<Entry>({
     title: "",
-    location: "",
     date: null,
-    description: "",
-    is_closed: false,
+    description: null,
+    transcribed_text: "",
   });
   const [notification, setNotification] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
@@ -43,40 +39,12 @@ const Detailview = () => {
       .then((data) =>
         setEntry({
           title: data.title,
-          location: data.location,
           date: new Date(data.date),
-          description: data.description,
-          is_closed: data.is_closed,
-          transcribed_text: data.transcription[0]?.transcribed_text,
+          description: data?.description,
+          transcribed_text: data.transcription && data.transcription.transcribed_text,
         })
       )
       .catch((error) => console.error("Error fetching entries:", error));
-  };
-
-  const completeTranscription = async () => {
-    await axios
-      .patch(
-        `http://localhost:5001/api/transcriptions/${id}/complete`,
-        {
-          is_closed: true,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
-        }
-      )
-      .then((response) => {
-        if (response.status === 200) {
-          setNotification("success");
-          fetchEntry();
-        } else {
-          setNotification("error");
-        }
-      })
-      .catch((error) => console.error("Error creating entry:", error));
   };
 
   useEffect(() => {
@@ -85,7 +53,7 @@ const Detailview = () => {
 
   return (
     <Container>
-      <Box sx={{ height: "100vh", justifyContent: "center" }}>
+      <Box>
         <Navbar title="detailview" />
         <Box
           sx={{
@@ -109,27 +77,6 @@ const Detailview = () => {
           setEntry={setEntry}
           fetchEntry={fetchEntry}
         />
-        {entry.transcribed_text && !entry.is_closed && (
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              mt: 2,
-              mb: 2,
-            }}
-          >
-            <Button />
-            <Button
-              variant="outlined"
-              onClick={() => {
-                completeTranscription();
-              }}
-              sx={{ mt: 2, mb: 2 }}
-            >
-              {t("complete")}
-            </Button>
-          </Box>
-        )}
         {notification && (
           <Snackbar
             open={notification !== null}

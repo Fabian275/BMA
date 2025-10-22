@@ -30,10 +30,8 @@ model transcription_info {
   id           Int      @id @default(autoincrement())
   user_id      Int
   title        String   @db.VarChar(100)
-  location     String   @db.VarChar(100)
-  date         DateTime @default(now()) @db.Timestamptz
-  description  String   @db.Text
-  is_closed    Boolean  @default(false)
+  date         DateTime  @default(now()) @db.Timestamptz
+  description  String?   @db.Text
 
   user         user             @relation(fields: [user_id], references: [id])
   transcription transcription?

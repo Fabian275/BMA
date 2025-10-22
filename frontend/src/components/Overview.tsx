@@ -23,11 +23,15 @@ import { useAuth } from "../AuthProvider";
 import { useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@mui/material/styles";
+
 
 function MitarbeiterPage() {
   const { token } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const theme = useTheme();
+
 
   const [entries, setEntries] = useState<any[]>([]);
   const [open, setOpen] = React.useState(false);
@@ -87,21 +91,25 @@ function MitarbeiterPage() {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Box sx={{ minHeight: "100vh" }}>
+      <Box sx={{ minHeight: "85vh" }}>
         <Navbar title="overview" />
         <LocalizationProvider dateAdapter={AdapterDateFns}>
           <CreateForm fetchEntries={fetchEntries} />
         </LocalizationProvider>
         <Grid container spacing={2}>
           {entries.map((entry) => (
-            <Grid item size={{ xs: 12, sm: 6 }} key={entry.id}>
+            <Grid item xs={12} sm={6} key={entry.id}>
               <Card
                 sx={{
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  backgroundColor: entry.is_closed ? "#d5d5d5" : "white",
-                  color: entry.is_closed ? "gray" : "black",
+                  backgroundColor: entry.is_closed
+                    ? theme.palette.grey[500]
+                    : theme.palette.background.paper,
+                  color: entry.is_closed
+                    ? theme.palette.text.primary
+                    : theme.palette.text.primary,
                   textAlign: "left",
                   width: 418,
                 }}
@@ -114,17 +122,19 @@ function MitarbeiterPage() {
                       {t("title")}: {entry.title}
                     </Typography>
                     <Typography variant="h6" component="div">
-                      {t("location")}: {entry.location}
-                    </Typography>
-                    <Typography variant="h6" component="div">
                       {t("date")}:{" "}
                       {new Date(entry.date).toLocaleString("de-DE", {
                         dateStyle: "medium",
+                        timeStyle: "medium",
                       })}
                     </Typography>
-                    <Typography variant="h6" component="div">
-                      {t("description")}: {entry.description}
-                    </Typography>
+                    {entry.description ? (
+                      <Typography variant="h6" component="div">
+                        {t("description")}: {entry.description}
+                      </Typography>
+                    ): <Typography variant="h6" component="div">
+                        {t("description")}: -
+                      </Typography>}
                   </CardContent>
                 </CardActionArea>
                 <CardActions sx={{ marginTop: "auto" }}>
@@ -157,6 +167,8 @@ function MitarbeiterPage() {
             <Grid item xs={12} sm={6} key={-1}>
               <Card
                 sx={{
+                  backgroundImage: "none",
+                  backgroundColor: "transparent",
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",

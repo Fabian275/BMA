@@ -1,5 +1,4 @@
 import { Box, Grid, TextField, Button, Alert, Snackbar } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import React, { useState } from "react";
 import { Add as AddIcon } from "@mui/icons-material";
 import axios from "axios";
@@ -15,8 +14,6 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
-  const [location, setLocation] = useState("");
-  const [date, setDate] = useState<Date | null>(null);
   const [description, setDescription] = useState("");
   const [notification, setNotification] = useState<"success" | "error" | null>(
     null
@@ -25,8 +22,6 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
   const handleToggleForm = () => {
     setShowForm(!showForm);
     setTitle("");
-    setLocation("");
-    setDate(null);
     setDescription("");
   };
 
@@ -35,10 +30,8 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
       await axios.post(
         "http://localhost:5001/api/transcriptions",
         {
-          title,
-          location,
-          date: date?.toISOString(),
-          description,
+          title: title || null,
+          description: description || null,
         },
         {
           headers: {
@@ -51,8 +44,6 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
       setNotification("success");
       await fetchEntries();
       setTitle("");
-      setLocation("");
-      setDate(null);
       setDescription("");
       setShowForm(false);
     } catch (error) {
@@ -70,7 +61,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
           sx={{ mt: 1, mb: 2, display: "flex", flexDirection: "column" }}
         >
           <Grid container spacing={2} mb={2}>
-            <Grid size={4} sm={2}>
+            <Grid item size={12} sm={6}>
               <TextField
                 required
                 fullWidth
@@ -79,28 +70,8 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
                 onChange={(e) => setTitle(e.target.value)}
               />
             </Grid>
-            <Grid size={4} sm={2}>
-              <TextField
-                required
-                fullWidth
-                label={t("location")}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </Grid>
-            <Grid size={4} sm={2}>
-              <DatePicker
-                format="dd/MM/yyyy"
-                label={t("date")}
-                value={date}
-                onChange={(newValue) => setDate(newValue)}
-                slots={{ textField: TextField }}
-                slotProps={{ textField: { fullWidth: true, required: true } }}
-              />
-            </Grid>
           </Grid>
           <TextField
-            required
             fullWidth
             label={t("description")}
             multiline
@@ -109,7 +80,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
             onChange={(e) => setDescription(e.target.value)}
           />
           <Grid container spacing={2} mb={2}>
-            <Grid item size={6} sm={3}>
+            <Grid item xs={6} sm={3}>
               <Button
                 variant="outlined"
                 fullWidth
@@ -119,7 +90,7 @@ const CreateForm: React.FC<CreateFormProps> = ({ fetchEntries }) => {
                 {t("cancel")}
               </Button>
             </Grid>
-            <Grid item size={6} sm={3}>
+            <Grid item xs={6} sm={3}>
               <Button
                 variant="contained"
                 fullWidth

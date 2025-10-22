@@ -72,14 +72,14 @@ apiRouter.post(
   "/transcriptions",
   authenticateToken,
   async (req: Request, res: Response) => {
-    const { title, location, date, description } = req.body;
+    const { title, description } = req.body;
     const { authorization } = req.headers as { authorization?: string };
     const decoded = DecodedUsers(authorization as string);
     if (!decoded) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
-    if (!title || !location || !date || !description) {
+    if (!title) {
       res.status(400).json({ message: "All fields are required" });
       return;
     }
@@ -89,9 +89,8 @@ apiRouter.post(
         data: {
           user_id: decoded.user_id,
           title: req.body.title,
-          location: req.body.location,
-          date: req.body.date,
-          description: req.body.description,
+          date: new Date(),
+          description: req?.body.description || null,
         },
       });
       res.status(201).json(transcriptionInfo);
@@ -145,7 +144,7 @@ apiRouter.patch(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const { authorization } = req.headers as { authorization?: string };
-    const { title, location, date, description } = req.body;
+    const { title, description } = req.body;
     const decoded = DecodedUsers(authorization as string);
     if (!decoded) {
       res.status(401).json({ message: "Unauthorized" });
@@ -168,58 +167,10 @@ apiRouter.patch(
         where: { id: Number(id) },
         data: {
           title,
-          location,
-          date,
           description,
         },
       });
       res.json(updatedTranscription);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  }
-);
-
-apiRouter.patch(
-  "/transcriptions/:id/complete",
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { authorization } = req.headers as { authorization?: string };
-      if (!authorization) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
-      }
-      const decoded = DecodedUsers(authorization as string);
-      if (!decoded) {
-        res.status(401).json({ message: "Unauthorized" });
-        return;
-      }
-      if (!id) {
-        res.status(400).json({ message: "ID is required" });
-        return;
-      }
-      const transcriptioninfo = await prisma.transcription_info.findUnique({
-        where: { id: Number(id) },
-      });
-      if (transcriptioninfo && transcriptioninfo.user_id !== decoded.user_id) {
-        res.status(403).json({ message: "Forbidden" });
-        return;
-      }
-
-      const completeTranscription = await prisma.transcription_info.update({
-        where: { id: Number(id) },
-        data: {
-          is_closed: true,
-        },
-      });
-      if (!completeTranscription) {
-        res.status(404).json({ message: "Transcription not found" });
-        return;
-      }
-      res.json(completeTranscription);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Internal server error" });
