@@ -42,6 +42,7 @@ model transcription {
   transcription_info_id  Int   @unique
   transcribed_text       String @db.Text
   file_path              String @db.VarChar(255)
+  summary_text           String? @db.Text
 
   transcription_info     transcription_info @relation(fields: [transcription_info_id], references: [id])
 }

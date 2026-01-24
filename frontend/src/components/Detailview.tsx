@@ -6,12 +6,14 @@ import { useParams } from "react-router-dom";
 import UpdateForm from "./UpdateForm";
 import CreateTranscription from "./CreateTranscription";
 import { useTranslation } from "react-i18next";
+import Summary from "./Summary";
 
 interface Entry {
   title: string | null;
   date: Date | null;
   description: string | null;
   transcribed_text?: string;
+  summary_text?: string | null;
 }
 
 const Detailview = () => {
@@ -22,9 +24,12 @@ const Detailview = () => {
     date: null,
     description: null,
     transcribed_text: "",
+    summary_text: null,
   });
   const [notification, setNotification] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
+  const [changes , setChanges] = useState(false);
+  const [originalText, setOriginalText] = useState<string | null>(null);
 
   const fetchEntry = async () => {
     await fetch(`http://localhost:5001/api/transcriptions/${id}`, {
@@ -36,14 +41,16 @@ const Detailview = () => {
       credentials: "include",
     })
       .then((response) => response.json())
-      .then((data) =>
+      .then((data) => {
         setEntry({
           title: data.title,
           date: new Date(data.date),
           description: data?.description,
           transcribed_text: data.transcription && data.transcription.transcribed_text,
-        })
-      )
+          summary_text: data.transcription && data.transcription.summary_text,
+        });
+        setOriginalText(data.transcription && data.transcription.transcribed_text);
+      })
       .catch((error) => console.error("Error fetching entries:", error));
   };
 
@@ -76,7 +83,13 @@ const Detailview = () => {
           entry={entry}
           setEntry={setEntry}
           fetchEntry={fetchEntry}
+          setChanges={setChanges}
+          changes={changes}
+          originalText={originalText}
         />
+        {entry.transcribed_text &&
+        <Summary entryId={id!} changes={changes} entry={entry} fetchEntry={fetchEntry} setChanges={setChanges}/>
+        }
         {notification && (
           <Snackbar
             open={notification !== null}

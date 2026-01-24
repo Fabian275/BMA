@@ -30,12 +30,16 @@ interface Entry {
   date: Date | null;
   description: string;
   transcribed_text?: string;
+  summary_text?: string | null;
 }
 
 interface Props {
   entry: Entry;
   setEntry: React.Dispatch<React.SetStateAction<Entry>>;
   fetchEntry: () => void;
+  setChanges: React.Dispatch<React.SetStateAction<boolean>>;
+  changes: boolean;
+  originalText: string | null;
 }
 
 const CreateTranscription = (props: Props) => {
@@ -43,7 +47,7 @@ const CreateTranscription = (props: Props) => {
   const { t } = useTranslation();
   const { token } = useAuth();
 
-  const { entry, setEntry, fetchEntry } = props;
+  const { entry, setEntry, fetchEntry, setChanges } = props;
   const [file, setFile] = useState<File | null>(null);
   const [fileURL, setFileURL] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,6 +59,7 @@ const CreateTranscription = (props: Props) => {
   const [notification, setNotification] = useState<string | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [open, setOpen] = useState(false);
+  const [changedText, setChangedText] = useState<string | null>(null);
 
   const startRecording = async () => {
     try {
@@ -118,7 +123,6 @@ const CreateTranscription = (props: Props) => {
       );
 
       if (response.status === 201) {
-        console.log(response.data);
         setNotification("Erfolgreich erstellt.");
         fetchEntry();
       } else {
@@ -180,6 +184,8 @@ const CreateTranscription = (props: Props) => {
       );
       if (response.status === 200) {
         setNotification("Erfolgreich gespeichert.");
+        setChanges(false);
+        fetchEntry();
       } else {
         setError(t("saveError"));
       }
@@ -207,6 +213,7 @@ const CreateTranscription = (props: Props) => {
           setOpen(false);
           fetchEntry();
           setNotification(t("audioFileDeleted"));
+          console.log(entry);
         } else {
           setError(t("deleteError"));
         }
@@ -222,6 +229,15 @@ const CreateTranscription = (props: Props) => {
       setNotification(t("audioFileDeleted"));
     }
   };
+
+  useEffect(() => {
+    if (props.originalText !== changedText && changedText !== null) {
+      setChanges(true);
+    } else if (props.originalText === changedText ) {
+      setChanges(false);
+      
+    }
+  },[changedText, props.originalText]);
 
   useEffect(() => {
     getAudioFile();
@@ -324,9 +340,9 @@ const CreateTranscription = (props: Props) => {
             variant="contained"
             color="primary"
             fullWidth
-            disabled={loading}
+            disabled={loading && entry.transcribed_text !== undefined || entry.transcribed_text !== null}
           >
-            {loading ? <CircularProgress size={24} /> : "Transkribieren"}
+            {loading ? <CircularProgress size={24} /> : t("submit_audio")}
           </Button>
         </Box>
       </Card>
@@ -345,11 +361,15 @@ const CreateTranscription = (props: Props) => {
                   ...prev,
                   transcribed_text: e.target.value,
                 }));
+                setChangedText(e.target.value);
               }}
               fullWidth
-              sx={{ mb: 2 }}
+              sx={{ mb: 0 }}
             />
           </CardContent>
+            <Typography variant="body2" color="textSecondary" sx={{  textAlign: "left", pl: 2, mb:2}}>
+            {t("word_count")}: {entry.transcribed_text?.split(/\s+/).filter((word) => word).length || 0}
+            </Typography>
           <Grid
             container
             spacing={2}
@@ -359,6 +379,7 @@ const CreateTranscription = (props: Props) => {
             <Button
               variant="outlined"
               color="primary"
+              disabled={!props.changes}
               onClick={() => {
                 fetchEntry();
               }}
@@ -371,6 +392,7 @@ const CreateTranscription = (props: Props) => {
               onClick={() => {
                 handleSave();
               }}
+              disabled={!props.changes}
             >
               <SaveIcon />
             </Button>

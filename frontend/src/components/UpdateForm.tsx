@@ -19,6 +19,7 @@ interface Entry {
   date: Date | null;
   description: string;
   transcribed_text?: string;
+  summary_text?: string | null;
 }
 
 interface Props {

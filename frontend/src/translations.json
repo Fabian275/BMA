@@ -39,7 +39,13 @@
             "loginTitle": "Login",
             "username": "Benutzername",
             "password": "Passwort",
-            "signIn": "Einloggen"
+            "signIn": "Einloggen",
+            "summary_title": "Zusammenfassung",
+            "generate_summary": "Zusammenfassung generieren",
+            "summary_minimum_words": "Eine Zusammenfassung kann nur erstellt werden, wenn die Transkription gespeichert ist und mindestens 50 Wörter enthält.",
+            "word_count": "Wortanzahl",
+            "submit_audio": "Transkribieren",
+            "generating_summary": "Zusammenfassung wird generiert..."
         }
     },
     "en": {
@@ -82,7 +88,13 @@
             "loginTitle": "Login",
             "username": "Username",
             "password": "Password",
-            "signIn": "Sign In"
+            "signIn": "Sign In",
+            "summary_title": "Summary",
+            "generate_summary": "Generate Summary",
+            "summary_minimum_words": "A summary can only be generated if the transcription is saved and contains at least 50 words.",
+            "word_count": "Word Count",
+            "submit_audio": "Transcribe",
+            "generating_summary": "Generating Summary..."
         }
     },
     "fr": {
@@ -125,7 +137,13 @@
             "loginTitle": "Connexion",
             "username": "Nom d'utilisateur",
             "password": "Mot de passe",
-            "signIn": "Se connecter"
+            "signIn": "Se connecter",
+            "summary_title": "Résumé",
+            "generate_summary": "Générer le résumé",
+            "summary_minimum_words": "Un résumé ne peut être créé que si la transcription est enregistrée et contient au moins 50 mots.",
+            "word_count": "Nombre de mots",
+            "submit_audio": "Transcrire",
+            "generating_summary": "Génération du résumé..."
         }
     }
 }

@@ -334,7 +334,7 @@ apiRouter.patch(
       }
       await prisma.transcription.update({
         where: { transcription_info_id: Number(id) },
-        data: { transcribed_text: text },
+        data: { transcribed_text: text, summary_text: null },
       });
       res.status(200).json({ message: "Transcription updated" });
     } catch (error) {
@@ -476,5 +476,83 @@ apiRouter.get(
     }
   }
 );
+
+apiRouter.post(
+  "/transcriptions/:id/summary",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { authorization } = req.headers as { authorization?: string };
+    const decoded = DecodedUsers(authorization as string);
+
+    if (!decoded) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    if (!id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    try {
+      const transcription = await prisma.transcription.findUnique({
+        where: { transcription_info_id: Number(id) },
+        include: {
+          transcription_info: true,
+        },
+      });
+
+      if (
+        !transcription ||
+        !transcription.transcription_info ||
+        transcription.transcription_info.user_id !== decoded.user_id
+      ) {
+        return res.status(403).json({ message: "Forbidden or transcription not found" });
+      }
+
+      const textToSummarize = transcription.transcribed_text;
+
+      if (!textToSummarize || textToSummarize.trim().length < 50) {
+        return res.status(400).json({
+          message: "Transcribed text is too short to summarize (min 50 chars).",
+        });
+      }
+
+      const prompt = `Fasse den folgenden Text kurz und präzise in der Originalsprache zusammen. Konzentriere dich auf die wichtigsten Aussagen: "${textToSummarize}"`;
+
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-3.5-turbo",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.3,
+          // max_tokens: 1000,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+        }
+      );
+
+      const summaryText = response.data.choices[0]?.message?.content?.trim();
+
+      if (summaryText) {
+        await prisma.transcription.update({
+          where: { transcription_info_id: Number(id) },
+          data: {
+            summary_text: summaryText,
+          },
+        });
+
+        return res.status(200).json({ summary: summaryText });
+      } else {
+        return res.status(500).json({ message: "Failed to generate summary from AI." });
+      }
+    } catch (error) {
+      console.error("Error generating summary:", error);
+      return res.status(500).json({ message: "Internal server error during summary generation" });
+    }
+  }
+)
 
 export default apiRouter;

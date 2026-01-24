@@ -34,6 +34,7 @@ CREATE TABLE "transcription" (
     "transcription_info_id" INTEGER NOT NULL,
     "transcribed_text" TEXT NOT NULL,
     "file_path" VARCHAR(255) NOT NULL,
+    "summary_text" TEXT,
 
     CONSTRAINT "transcription_pkey" PRIMARY KEY ("id")
 );

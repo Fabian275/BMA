@@ -34,7 +34,6 @@ const Login = () => {
         { username, password },
         { withCredentials: true }
       );
-      console.log("Login erfolgreich:", response.data);
       const { accessToken } = response.data;
       login(accessToken);
       navigate("/overview");
