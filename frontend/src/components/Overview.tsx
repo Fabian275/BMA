@@ -57,7 +57,12 @@ function MitarbeiterPage() {
       credentials: "include",
     })
       .then((response) => response.json())
-      .then((data) => setEntries(data))
+      .then((data) => {
+        const sortedData = data.sort((a: any, b: any) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+        setEntries(sortedData);
+      })
       .catch((error) => console.error("Error fetching entries:", error));
   };
 

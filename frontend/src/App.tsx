@@ -18,7 +18,7 @@ import { getTheme } from "./components/theme";
 import { ThemeModeProvider, useThemeMode } from "./components/ThemeContext";
 
 function ThemedApp() {
-  const { mode, toggleMode, icon } = useThemeMode(); // funktioniert jetzt!
+  const { mode, toggleMode, icon } = useThemeMode();
   const { token } = useAuth();
   const [i18nInitialized, setI18nInitialized] = useState(false);
   const theme = getTheme(mode);

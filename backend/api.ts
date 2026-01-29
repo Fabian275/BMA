@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage, limits: { fileSize: 25 * 1024 * 1024 } });
 
 const DecodedUsers = (token: string) => {
   if (!token) {
@@ -59,6 +59,9 @@ apiRouter.get(
         where: {
           user_id: decoded.user_id,
         },
+        orderBy: {
+          date: 'desc'
+        }
       });
       res.json(transcriptions);
     } catch (error) {
@@ -219,8 +222,20 @@ apiRouter.delete(
 
 apiRouter.post(
   "/transcriptions/:id/audio",
-  upload.single("file"),
   authenticateToken,
+  (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          return res.status(413).json({ message: "Datei zu gross. Maximal 25 MB erlaubt." });
+        }
+        return res.status(400).json({ message: err.message });
+      } else if (err) {
+        return res.status(500).json({ message: "Upload Fehler" });
+      }
+      next();
+    });
+  },
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const { authorization } = req.headers as { authorization?: string };
@@ -264,11 +279,8 @@ apiRouter.post(
           },
         }
       );
-      if (
-        response.data.text === undefined ||
-        response.data.text === null ||
-        response.data.text === ""
-      ) {
+
+      if (!response.data.text) {
         res.status(422).json({ message: "No text transcribed" });
         return;
       }

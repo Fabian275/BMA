@@ -45,7 +45,8 @@
             "summary_minimum_words": "Eine Zusammenfassung kann nur erstellt werden, wenn die Transkription gespeichert ist und mindestens 50 Wörter enthält.",
             "word_count": "Wortanzahl",
             "submit_audio": "Transkribieren",
-            "generating_summary": "Zusammenfassung wird generiert..."
+            "generating_summary": "Zusammenfassung wird generiert...",
+            "fileTooLarge": "Die Datei ist zu gross. Maximal 25 MB erlaubt."
         }
     },
     "en": {
@@ -94,7 +95,8 @@
             "summary_minimum_words": "A summary can only be generated if the transcription is saved and contains at least 50 words.",
             "word_count": "Word Count",
             "submit_audio": "Transcribe",
-            "generating_summary": "Generating Summary..."
+            "generating_summary": "Generating Summary...",
+            "fileTooLarge": "File is too large. Maximum size allowed is 25 MB."
         }
     },
     "fr": {
@@ -143,7 +145,8 @@
             "summary_minimum_words": "Un résumé ne peut être créé que si la transcription est enregistrée et contient au moins 50 mots.",
             "word_count": "Nombre de mots",
             "submit_audio": "Transcrire",
-            "generating_summary": "Génération du résumé..."
+            "generating_summary": "Génération du résumé...",
+            "fileTooLarge": "Le fichier est trop volumineux. La taille maximale autorisée est de 25 Mo."
         }
     }
 }

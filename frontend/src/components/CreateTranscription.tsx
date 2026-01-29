@@ -66,25 +66,47 @@ const CreateTranscription = (props: Props) => {
       const audioStream = await navigator.mediaDevices.getUserMedia({
         audio: true,
       });
-      const recorder = new MediaRecorder(audioStream);
+
+      const options = { mimeType: "audio/webm;codecs=opus", audioBitsPerSecond: 96000 };
+      const recorder = new MediaRecorder(audioStream, options);
       const chunks: BlobPart[] = [];
+      let currentSize = 0;
 
       recorder.ondataavailable = (event) => {
-        if (event.data.size > 0) chunks.push(event.data);
+        if (event.data.size > 0) {
+          chunks.push(event.data);
+          currentSize += event.data.size;
+
+          if (currentSize > 24.5 * 1024 * 1024) {
+            recorder.stop();
+          }
+        }
       };
 
       recorder.onstop = () => {
         const audioBlob = new Blob(chunks, { type: "audio/webm" });
-        const audioFile = new File([audioBlob], "recording.webm", {
-          type: "audio/webm",
-        });
-        setFile(audioFile);
-        setFileURL(URL.createObjectURL(audioBlob));
+
+        if (audioBlob.size > 25 * 1024 * 1024) {
+          setError(t("fileTooLarge"));
+          setFile(null);
+          setFileURL(null);
+        } else {
+          const audioFile = new File([audioBlob], "recording.webm", {
+            type: "audio/webm",
+          });
+          setFile(audioFile);
+          setFileURL(URL.createObjectURL(audioBlob));
+          setError("");
+        }
+
+        audioStream.getTracks().forEach((track) => track.stop());
+        setIsRecording(false);
+        setStream(null);
       };
 
       setStream(audioStream);
       setMediaRecorder(recorder);
-      recorder.start();
+      recorder.start(1000);
       setIsRecording(true);
     } catch (err) {
       console.error("Fehler beim Starten der Aufnahme:", err);
@@ -93,10 +115,9 @@ const CreateTranscription = (props: Props) => {
   };
 
   const stopRecording = () => {
-    mediaRecorder?.stop();
-    setIsRecording(false);
-    stream?.getTracks().forEach((track) => track.stop());
-    setStream(null);
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -265,6 +286,14 @@ const CreateTranscription = (props: Props) => {
               hidden
               onChange={(e) => {
                 const selectedFile = e.target.files?.[0];
+                const maxSize = 25 * 1024 * 1024;
+                if (selectedFile && selectedFile.size > maxSize) {
+                  setError(t("fileTooLarge"));
+                  setFile(null);
+                  setFileURL(null);
+                  e.target.value = "";
+                  return;
+                }
                 if (selectedFile) {
                   setFile(selectedFile);
                   setFileURL(URL.createObjectURL(selectedFile));
